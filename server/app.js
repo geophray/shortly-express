@@ -17,13 +17,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
 
-
+app.use(cookieParser);
+app.use(Auth.createSession);
 
 
 app.get('/',
   (req, res) => {
-    // console.log(req.body);
-    app.use(cookieParser);
     res.render('index');
   });
 
@@ -91,7 +90,7 @@ app.post('/signup', (req, res) => {
   models.Users.create(req.body)
     .then(user => {
       res.status(201);
-      models.Sessions.create(user.insertId);
+      models.Sessions.update({'id': req.session.id}, {'userId': user.insertId});
       res.redirect('/');
     })
     .catch(error => {
