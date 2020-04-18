@@ -39,8 +39,7 @@ describe('', function() {
     /* TODO: Update user and password if different than on your local machine            */
     /*************************************************************************************/
     db = mysql.createConnection({
-      user: 'student',
-      password: 'student',
+      user: 'root',
       database: 'shortly'
     });
 
@@ -123,7 +122,7 @@ describe('', function() {
     });
   });
 
-  xdescribe('Account Creation:', function() {
+  describe('Account Creation:', function() {
 
     it('signup creates a new user record', function(done) {
       var options = {
@@ -162,7 +161,9 @@ describe('', function() {
         var queryString = 'SELECT password FROM users where username = "Samantha"';
         db.query(queryString, function(err, rows) {
           if (err) { return done (err); }
+          console.log('rows: ', rows);
           var user = rows[0];
+          console.log('user: ', user);
           expect(user.password).to.exist;
           expect(user.password).to.not.equal('Samantha');
           done();
