@@ -1,13 +1,21 @@
 const parseCookies = (req, res, next) => {
-  cookie = req.cookies.sessionId;
-  if (!cookie) {
+  cookieArray = req.headers.cookie ? req.headers.cookie.split('; ') : [];
+  cookies = {};
+  // console.log('cookie monster =======================>', cookieArray);
+  // Create an empty object cookies
+  // split by  ; into an array of cookies
+  // // Iterate over that array,
+  // // // Splitting each string by = in to a tuple
+  // // // Add each tuple to the cookie object as prop:val
 
+  for (let i = 0; i < cookieArray.length; i++) {
+    let cookie = cookieArray[i].split('=');
+    cookies[cookie[0]] = cookie[1];
   }
-  // Load cookies from req
-  // If there is a session cookie already
-  // Invoke auth with the cookie value
-  // Else load login view
 
+  req.cookies = cookies;
+
+  next();
 };
 
 module.exports = parseCookies;
