@@ -5,6 +5,7 @@ const partials = require('express-partials');
 const bodyParser = require('body-parser');
 const Auth = require('./middleware/auth');
 const models = require('./models');
+const cookieParser = require('./middleware/cookieParser');
 
 const app = express();
 
@@ -22,38 +23,9 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.get('/',
   (req, res) => {
     // console.log(req.body);
+    app.use(cookieParser);
     res.render('index');
   });
-
-app.get('/signup', (req, res) => {
-  res.render('signup');
-});
-
-app.post('/signup', (req, res) => {
-  console.log(req.body);
-  if (models.Users.get({username: req.body.username})) {
-    //alert('ERROR: username already exists')
-    console.log('user already exists', req.body.username);
-    res.redirect('/signup');
-  }
-  models.Users.create(req.body);
-  // .then(user => {
-  //   console.log('success!')
-  //   res.status(201);
-  // })
-  // .catch(error => {
-  //   console.log(error);
-  // })
-
-});
-
-app.get('/login', (req, res) => {
-  res.render('login');
-});
-
-app.post('/login', (req, res) => {
-  res.render('login');
-});
 
 app.get('/create',
   (req, res) => {
@@ -111,7 +83,33 @@ app.post('/links',
 // Write your authentication routes here
 /************************************************************/
 
+app.get('/signup', (req, res) => {
+  res.render('signup');
+});
 
+app.post('/signup', (req, res) => {
+  models.Users.create(req.body)
+    .then(user => {
+      res.status(201);
+      models.Sessions.create(user.insertId);
+      res.redirect('/');
+    })
+    .catch(error => {
+      console.error(error);
+      res.redirect('/signup');
+    });
+
+});
+
+
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+
+app.post('/login', (req, res) => {
+  res.render('login');
+
+});
 
 /************************************************************/
 // Handle the code parameter route last - if all other routes fail

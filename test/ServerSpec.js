@@ -161,9 +161,7 @@ describe('', function() {
         var queryString = 'SELECT password FROM users where username = "Samantha"';
         db.query(queryString, function(err, rows) {
           if (err) { return done (err); }
-          console.log('rows: ', rows);
           var user = rows[0];
-          console.log('user: ', user);
           expect(user.password).to.exist;
           expect(user.password).to.not.equal('Samantha');
           done();
@@ -278,7 +276,7 @@ describe('', function() {
     });
   });
 
-  xdescribe('Sessions Schema:', function() {
+  describe('Sessions Schema:', function() {
     it('contains a sessions table', function(done) {
       var queryString = 'SELECT * FROM sessions';
       db.query(queryString, function(err, results) {
@@ -326,7 +324,7 @@ describe('', function() {
     });
   });
 
-  xdescribe('Express Middleware', function() {
+  describe('Express Middleware', function() {
     var cookieParser = require('../server/middleware/cookieParser.js');
     var createSession = require('../server/middleware/auth.js').createSession;
 
