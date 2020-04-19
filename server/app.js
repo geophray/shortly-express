@@ -106,7 +106,27 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  res.render('login');
+  var username = req.body.username;
+  var password = req.body.password;
+
+  // Get user with username (including hashed password and salt)
+  // User compare to check password
+  // If true send them to /
+  // // Update session with user id
+  // Else send them to /login
+  return models.Users.get({username})
+    .then(user => {
+      if (!user || !models.Users.compare(password, user.password, user.salt)) {
+        throw user;
+      }
+      return models.Sessions.update({'id': req.session.id}, {'userId': user.id});
+    })
+    .then(() => {
+      res.redirect('/');
+    })
+    .catch(user => {
+      res.redirect('/login');
+    });
 
 });
 
