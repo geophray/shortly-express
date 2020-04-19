@@ -21,17 +21,17 @@ app.use(cookieParser);
 app.use(Auth.createSession);
 
 
-app.get('/',
+app.get('/', Auth.checkSession,
   (req, res) => {
     res.render('index');
   });
 
-app.get('/create',
+app.get('/create', Auth.checkSession,
   (req, res) => {
     res.render('index');
   });
 
-app.get('/links',
+app.get('/links', Auth.checkSession,
   (req, res, next) => {
     models.Links.getAll()
       .then(links => {
@@ -42,7 +42,7 @@ app.get('/links',
       });
   });
 
-app.post('/links',
+app.post('/links', Auth.checkSession,
   (req, res, next) => {
     var url = req.body.url;
     if (!models.Links.isValidUrl(url)) {
@@ -108,6 +108,12 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
   res.render('login');
 
+});
+
+app.get('/logout', Auth.checkSession, (req, res) => {
+  models.Sessions.delete({'id': req.session.id});
+  res.clearCookie('shortlyid');
+  res.redirect('/login');
 });
 
 /************************************************************/
