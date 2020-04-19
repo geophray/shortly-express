@@ -17,22 +17,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
 
+app.use(cookieParser);
+app.use(Auth.createSession);
 
 
-
-app.get('/',
-  (req, res) => {
-    // console.log(req.body);
-    app.use(cookieParser);
-    res.render('index');
-  });
-
-app.get('/create',
+app.get('/', Auth.checkSession,
   (req, res) => {
     res.render('index');
   });
 
-app.get('/links',
+app.get('/create', Auth.checkSession,
+  (req, res) => {
+    res.render('index');
+  });
+
+app.get('/links', Auth.checkSession,
   (req, res, next) => {
     models.Links.getAll()
       .then(links => {
@@ -43,7 +42,7 @@ app.get('/links',
       });
   });
 
-app.post('/links',
+app.post('/links', Auth.checkSession,
   (req, res, next) => {
     var url = req.body.url;
     if (!models.Links.isValidUrl(url)) {
@@ -91,7 +90,7 @@ app.post('/signup', (req, res) => {
   models.Users.create(req.body)
     .then(user => {
       res.status(201);
-      models.Sessions.create(user.insertId);
+      models.Sessions.update({'id': req.session.id}, {'userId': user.insertId});
       res.redirect('/');
     })
     .catch(error => {
@@ -107,8 +106,34 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  res.render('login');
+  var username = req.body.username;
+  var password = req.body.password;
 
+  // Get user with username (including hashed password and salt)
+  // User compare to check password
+  // If true send them to /
+  // // Update session with user id
+  // Else send them to /login
+  return models.Users.get({username})
+    .then(user => {
+      if (!user || !models.Users.compare(password, user.password, user.salt)) {
+        throw user;
+      }
+      return models.Sessions.update({'id': req.session.id}, {'userId': user.id});
+    })
+    .then(() => {
+      res.redirect('/');
+    })
+    .catch(user => {
+      res.redirect('/login');
+    });
+
+});
+
+app.get('/logout', Auth.checkSession, (req, res) => {
+  models.Sessions.delete({'id': req.session.id});
+  res.clearCookie('shortlyid');
+  res.redirect('/login');
 });
 
 /************************************************************/
